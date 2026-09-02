@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | `source/deepseek-light-source.png` | `https://deepseek.com/favicon.ico` | Light/color variant: the blue whale on transparency (extracted from the site's 225×225 favicon). |
 | `source/platform-dark-source.svg` | `https://fe-static.deepseek.com/platform/favicon.svg` | Dark variant source, **untouched** as served by platform.deepseek.com (the whale path ships `fill="#000"`). |
-| `source/platform-dark-white.svg` | generated from the SVG above | Same drawing with `fill="#ffffff"` — the legible dark-mode rendition. |
+| `source/platform-dark-white.svg` | generated from the SVG above | Same drawing with `fill="#ffffff"` - the legible dark-mode rendition. |
 
 ## Generated files
 
@@ -14,9 +14,9 @@
 multi-size `.ico` files (16/24/32/40/48/64/128/256 PNG frames) into
 `src\DeepSeekHarness\assets\`:
 
-- `icon-light.ico` — blue whale (light mode)
-- `icon-dark.ico` — white whale (dark mode)
-- `app.ico` — copy of `icon-light.ico`, compiled into the exe as `ApplicationIcon`
+- `icon-light.ico` - blue whale (light mode)
+- `icon-dark.ico` - white whale (dark mode)
+- `app.ico` - copy of `icon-light.ico`, compiled into the exe as `ApplicationIcon`
 
 Regenerate any time:
 

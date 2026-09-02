@@ -9,7 +9,7 @@ param(
     Builds the DeepSeek Harness desktop app.
 
 .DESCRIPTION
-    Default (no switch): framework-dependent single-file exe into dist\ —
+    Default (no switch): framework-dependent single-file exe into dist\ -
     small, for local development; needs the .NET 8 runtime installed.
 
     -Portable    Self-contained folder (exe + DLLs, .NET runtime bundled) plus
