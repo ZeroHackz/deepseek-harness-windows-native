@@ -4,10 +4,12 @@ using System.Runtime.InteropServices;
 
 namespace DShNative;
 
-/// <summary>
-/// Windows theming interop: OS dark/light detection, immersive (dark)
-/// title bars, and per-window caption/border/text colors on Windows 11 22H2+.
-/// </summary>
+/**
+ * <summary>
+ * Windows theming interop: OS dark/light detection, immersive (dark)
+ * title bars, and per-window caption/border/text colors on Windows 11 22H2+.
+ * </summary>
+ */
 public static class NativeTheme
 {
     public const int WmSettingChange = 0x001A;
@@ -21,7 +23,7 @@ public static class NativeTheme
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int attributeValue, int attributeSize);
 
-    /// <summary>True when Windows uses the dark app theme (AppsUseLightTheme = 0).</summary>
+    /** <summary>True when Windows uses the dark app theme (AppsUseLightTheme = 0).</summary> */
     public static bool IsSystemDark()
     {
         try
@@ -36,7 +38,7 @@ public static class NativeTheme
         }
     }
 
-    /// <summary>True on Windows 11 22H2+ where caption/border/text colors are supported.</summary>
+    /** <summary>True on Windows 11 22H2+ where caption/border/text colors are supported.</summary> */
     public static bool SupportsCustomCaptionColors => Environment.OSVersion.Version.Build >= 22621;
 
     public static void SetImmersiveDark(IntPtr hwnd, bool dark)
@@ -68,10 +70,10 @@ public static class NativeTheme
         _ = DwmSetWindowAttribute(hwnd, DwmwaBorderColor, ref value, sizeof(int));
     }
 
-    /// <summary>COLORREF layout is 0x00BBGGRR, while Color.ToArgb is 0xAARRGGBB.</summary>
+    /** <summary>COLORREF layout is 0x00BBGGRR, while Color.ToArgb is 0xAARRGGBB.</summary> */
     private static int ToColorRef(Color color) => color.R | (color.G << 8) | (color.B << 16);
 
-    /// <summary>Perceived luminance in [0,1]; &lt; 0.45 reads as a dark background.</summary>
+    /** <summary>Perceived luminance in [0,1]; &lt; 0.45 reads as a dark background.</summary> */
     public static bool IsDark(Color color)
     {
         var lum = (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255.0;

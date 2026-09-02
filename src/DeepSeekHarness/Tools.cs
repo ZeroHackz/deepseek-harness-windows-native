@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace DShNative;
 
-/// <summary>Resolves node, the npm CLI and the installed @deepseek-ai/dsh entry point.</summary>
+/** <summary>Resolves node, the npm CLI and the installed @deepseek-ai/dsh entry point.</summary> */
 public sealed class Tools
 {
     public string? Node { get; init; }

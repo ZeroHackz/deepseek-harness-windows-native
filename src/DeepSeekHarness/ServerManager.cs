@@ -3,10 +3,10 @@ using System.IO;
 
 namespace DShNative;
 
-/// <summary>Lifecycle of the managed `dsh web` child process.</summary>
+/** <summary>Lifecycle of the managed `dsh web` child process.</summary> */
 public static class ServerManager
 {
-    /// <summary>Starts `dsh web --no-open` as a child; returns its pid (0 on failure).</summary>
+    /** <summary>Starts `dsh web --no-open` as a child; returns its pid (0 on failure).</summary> */
     public static int Start(Tools t, Options o)
     {
         var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
@@ -37,7 +37,7 @@ public static class ServerManager
         try { if (File.Exists(AppPaths.ServerPidFile)) File.Delete(AppPaths.ServerPidFile); } catch { }
     }
 
-    /// <summary>--stop: kill whatever server this app previously started. Returns 1 when killed.</summary>
+    /** <summary>--stop: kill whatever server this app previously started. Returns 1 when killed.</summary> */
     public static int StopByPidFile()
     {
         try

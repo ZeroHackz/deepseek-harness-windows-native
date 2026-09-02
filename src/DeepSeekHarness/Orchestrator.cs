@@ -4,10 +4,12 @@ using System.Windows.Forms;
 
 namespace DShNative;
 
-/// <summary>
-/// Main flow: tool discovery -> auto-update -> attach-or-own the server ->
-/// wait for readiness -> show the window -> stop the server on close.
-/// </summary>
+/**
+ * <summary>
+ * Main flow: tool discovery -> auto-update -> attach-or-own the server ->
+ * wait for readiness -> show the window -> stop the server on close.
+ * </summary>
+ */
 public static class Orchestrator
 {
     public static int Run(Options o)
@@ -36,7 +38,7 @@ public static class Orchestrator
             }
         }
 
-        // ---- ATTACH: something already serves the port ----------------------------
+        // ATTACH: something already serves the port
         if (NetProbe.IsOpen(o.Address, o.Port))
         {
             Log.Info($"port {o.Port} is already in use -> ATTACH mode (no update; the server is left untouched)");
@@ -48,7 +50,7 @@ public static class Orchestrator
             return RunWindow(o, owned: false, managedPid: 0);
         }
 
-        // ---- OWNED: we boot and manage the server ---------------------------------
+        // OWNED: we boot and manage the server
         using var guard = ManagedLock.TryAcquire();
         if (!guard.Owner)
         {
@@ -142,10 +144,12 @@ public static class Orchestrator
         return false;
     }
 
-    /// <summary>
-    /// Shows the WebView2 window and blocks until it closes. In owned mode the
-    /// managed server is stopped afterwards.
-    /// </summary>
+    /**
+     * <summary>
+     * Shows the WebView2 window and blocks until it closes. In owned mode the
+     * managed server is stopped afterwards.
+     * </summary>
+     */
     private static int RunWindow(Options o, bool owned, int managedPid)
     {
         try

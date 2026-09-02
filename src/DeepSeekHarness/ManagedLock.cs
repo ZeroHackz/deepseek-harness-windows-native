@@ -3,10 +3,12 @@ using System.IO;
 
 namespace DShNative;
 
-/// <summary>
-/// Single-instance guard for the owned (server-booting) mode. The first
-/// instance to acquire the lock owns the server; later ones wait and attach.
-/// </summary>
+/**
+ * <summary>
+ * Single-instance guard for the owned (server-booting) mode. The first
+ * instance to acquire the lock owns the server; later ones wait and attach.
+ * </summary>
+ */
 public sealed class ManagedLock : IDisposable
 {
     private readonly string _path;

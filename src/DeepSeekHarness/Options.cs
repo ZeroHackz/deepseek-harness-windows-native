@@ -2,7 +2,7 @@ using System;
 
 namespace DShNative;
 
-/// <summary>Command-line options of the DeepSeek Harness desktop app.</summary>
+/** <summary>Command-line options of the DeepSeek Harness desktop app.</summary> */
 public sealed class Options
 {
     public string Address { get; private set; } = "127.0.0.1";
@@ -13,7 +13,7 @@ public sealed class Options
     public bool Stop { get; private set; }
     public int ReadyTimeoutSec { get; private set; } = 120;
 
-    /// <summary>Whether error message boxes are appropriate (no, in test modes).</summary>
+    /** <summary>Whether error message boxes are appropriate (no, in test modes).</summary> */
     public bool ShowDialogs => !NoWindow && !SelfTest;
 
     public string Url => $"http://{Address}:{Port}";
