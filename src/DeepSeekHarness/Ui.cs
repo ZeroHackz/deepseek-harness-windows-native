@@ -3,10 +3,7 @@ using System.Windows.Forms;
 
 namespace DShNative;
 
-/**
- * Shows errors to the user. Pop a message box when we actually have a UI;
- * otherwise just log and move on.
- */
+/** User errors: message box when we have a UI, log regardless. */
 public static class Ui
 {
     public static void Error(Options o, string message)

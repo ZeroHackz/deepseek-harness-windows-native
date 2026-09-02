@@ -3,15 +3,10 @@ using System.IO;
 
 namespace DShNative;
 
-/**
- * Owns the dsh web child process: start it, stop it, remember its pid.
- */
+/** Owns the dsh web child: start, stop, remember its pid. */
 public static class ServerManager
 {
-    /**
-     * Spawns `dsh web --no-open` with our host/port. Returns the pid,
-     * or 0 when it could not be started.
-     */
+    /** Spawns `dsh web --no-open`; returns pid or 0. */
     public static int Start(Tools t, Options o)
     {
         var stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
@@ -42,10 +37,7 @@ public static class ServerManager
         try { if (File.Exists(AppPaths.ServerPidFile)) File.Delete(AppPaths.ServerPidFile); } catch { }
     }
 
-    /**
-     * --stop: read the pid file and kill that server. Returns 1 when
-     * something actually got killed.
-     */
+    /** --stop: kill the server from the pid file. Returns 1 when killed. */
     public static int StopByPidFile()
     {
         try

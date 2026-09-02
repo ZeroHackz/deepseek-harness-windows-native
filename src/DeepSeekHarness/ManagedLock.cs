@@ -3,11 +3,7 @@ using System.IO;
 
 namespace DShNative;
 
-/**
- * One launcher boots the server, everyone else attaches. The lock is a
- * simple pid file: whoever wrote it owns the server, latecomers wait for
- * the port and then behave like attach mode.
- */
+/** Pid-file lock: whoever holds it owns the server; the rest attach. */
 public sealed class ManagedLock : IDisposable
 {
     private readonly string _path;
@@ -35,9 +31,7 @@ public sealed class ManagedLock : IDisposable
         }
         catch
         {
-            // Lock file broken or unwritable - degrade to a plain peer that
-            // waits for the port and attaches. Never kill anything we may
-            // not own.
+            // broken lock -> degrade to a peer: attach, never kill
             return new ManagedLock(path, owner: false);
         }
     }

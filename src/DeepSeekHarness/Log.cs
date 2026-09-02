@@ -3,11 +3,7 @@ using System.IO;
 
 namespace DShNative;
 
-/**
- * Tiny logger: timestamped lines go to the log file, and to the console
- * when one is attached. Deliberately never throws - logging should not be
- * the thing that takes the app down.
- */
+/** Logs to file + console (when attached). Never throws. */
 public static class Log
 {
     private static readonly object Sync = new();
@@ -30,7 +26,7 @@ public static class Log
         }
         catch
         {
-            // log file unwritable or whatever - not worth crashing over
+            // logging must never crash the app
         }
         try { Console.WriteLine(line); } catch { }
     }

@@ -3,10 +3,7 @@ using System.IO;
 
 namespace DShNative;
 
-/**
- * Where we keep our stuff under %LOCALAPPDATA%\DeepSeekHarness:
- * logs, WebView2 data, and the pid/lock files for server ownership.
- */
+/** App-data layout under %LOCALAPPDATA%\DeepSeekHarness (logs, WebView2 data, pid/lock files). */
 public static class AppPaths
 {
     public static string Root { get; } = Path.Combine(

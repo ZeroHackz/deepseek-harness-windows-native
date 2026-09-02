@@ -8,19 +8,10 @@ using Microsoft.Web.WebView2.WinForms;
 
 namespace DShNative;
 
-/**
- * The actual window: a WebView2 (shared Edge runtime) rendering the harness
- * UI. No browser profile, no sign-in, no sync - just a private user-data
- * folder.
- *
- * Look & feel: the icon follows the OS theme (blue whale in light mode,
- * white whale in dark), and once the page has rendered we measure its real
- * background and re-theme the title bar to match - otherwise you get a
- * white bar on top of a dark app, which looks broken.
- */
+/** WebView2 window for the harness UI; icon and title bar follow the theme. */
 public sealed class MainForm : Form
 {
-    // Reads the page's real background via JS: body first, then <html>.
+    // Page background via JS (body first, then <html>).
     private const string BgScript =
         "(function(){try{var s=getComputedStyle(document.body).backgroundColor;" +
         "if(!s||s==='transparent'||s==='rgba(0, 0, 0, 0)'){s=getComputedStyle(document.documentElement).backgroundColor;}" +
@@ -73,10 +64,7 @@ public sealed class MainForm : Form
         ApplyWindowChrome();
     }
 
-    /**
-     * Windows flipped its theme - swap the icon and, until we measured the
-     * page, refresh the OS-based defaults too.
-     */
+    /** Theme change: swap icon; refresh defaults until the page bg is measured. */
     protected override void WndProc(ref Message m)
     {
         if (m.Msg == NativeTheme.WmSettingChange && !IsDisposed)
@@ -137,10 +125,7 @@ public sealed class MainForm : Form
         await MeasurePageBackgroundAsync();
     }
 
-    /**
-     * Asks the rendered page what its background color is, then re-themes
-     * the window chrome to match.
-     */
+    /** Re-themes the chrome to match the rendered page background. */
     private async Task MeasurePageBackgroundAsync()
     {
         try
@@ -166,11 +151,7 @@ public sealed class MainForm : Form
         }
     }
 
-    /**
-     * Drives the DWM chrome: immersive dark caption for dark content, and on
-     * Win11 22H2+ paint the caption/border in the page's own background so
-     * the title bar visually disappears into the app.
-     */
+    /** Immersive dark + caption/border tinted to the page background (Win11 22H2+). */
     private void ApplyWindowChrome()
     {
         if (!IsHandleCreated) return;

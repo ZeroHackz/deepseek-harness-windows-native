@@ -2,10 +2,7 @@ using System;
 
 namespace DShNative;
 
-/**
- * --self-test: dumps an environment report to the console and the log.
- * Always exits 0 - it is a diagnostic, not a check.
- */
+/** --self-test: environment report to console + log; always exit 0. */
 public static class SelfTest
 {
     public static int Run(Options o)

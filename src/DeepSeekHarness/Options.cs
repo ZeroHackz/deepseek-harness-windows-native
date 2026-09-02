@@ -2,9 +2,7 @@ using System;
 
 namespace DShNative;
 
-/**
- * The CLI flags this app understands (see README for what each does).
- */
+/** CLI flags (see README). */
 public sealed class Options
 {
     public string Address { get; private set; } = "127.0.0.1";
@@ -15,10 +13,7 @@ public sealed class Options
     public bool Stop { get; private set; }
     public int ReadyTimeoutSec { get; private set; } = 120;
 
-    /**
-     * True when a message box is appropriate, i.e. not in --self-test or
-     * --no-window mode (nobody is looking at a window there).
-     */
+    /** Pop a message box? No in headless modes. */
     public bool ShowDialogs => !NoWindow && !SelfTest;
 
     public string Url => $"http://{Address}:{Port}";

@@ -2,9 +2,7 @@ using System;
 
 namespace DShNative;
 
-/**
- * --stop: kill the dsh web server this app started earlier.
- */
+/** --stop: kill the server this app started. */
 public static class StopOnly
 {
     public static int Run(Options o)

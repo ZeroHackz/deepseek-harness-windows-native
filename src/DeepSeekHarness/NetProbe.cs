@@ -4,9 +4,7 @@ using System.Net.Sockets;
 
 namespace DShNative;
 
-/**
- * Quick loopback checks: is the port open at all, and does it answer HTTP 200.
- */
+/** Loopback probes: is the port open, does it answer HTTP 200. */
 public static class NetProbe
 {
     public static bool IsOpen(string host, int port, int timeoutMs = 600)

@@ -4,11 +4,7 @@ using System.Windows.Forms;
 
 namespace DShNative;
 
-/**
- * The whole flow, in order: find the tools -> maybe update dsh -> attach
- * to a server that already runs, or boot our own -> wait until it answers ->
- * show the window -> stop the server once the window is closed.
- */
+/** Update dsh, attach to or boot the server, show the window, stop on close. */
 public static class Orchestrator
 {
     public static int Run(Options o)
@@ -143,10 +139,7 @@ public static class Orchestrator
         return false;
     }
 
-    /**
-     * Opens the window and blocks until the user closes it. When we own the
-     * server, shut it down afterwards.
-     */
+    /** Blocks until the window closes; stops the server if we own it. */
     private static int RunWindow(Options o, bool owned, int managedPid)
     {
         try

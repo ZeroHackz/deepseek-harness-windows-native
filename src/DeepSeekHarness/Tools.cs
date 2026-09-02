@@ -5,10 +5,7 @@ using System.Text.Json;
 
 namespace DShNative;
 
-/**
- * Finds node, the npm CLI, and the globally installed @deepseek-ai/dsh
- * entry point on this machine.
- */
+/** Finds node, npm and the global @deepseek-ai/dsh entry. */
 public sealed class Tools
 {
     public string? Node { get; init; }
@@ -28,8 +25,7 @@ public sealed class Tools
             var t = d.Trim();
             if (t.Length > 0 && !dirs.Contains(t, StringComparer.OrdinalIgnoreCase)) dirs.Add(t);
         }
-        // npm's global bin is sometimes missing from PATH (weird launchers),
-        // so probe the standard user prefix as well: %APPDATA%\npm
+        // npm global bin may sit outside PATH; also probe %APPDATA%\npm
         var appDataNpm = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm");
         if (!dirs.Contains(appDataNpm, StringComparer.OrdinalIgnoreCase)) dirs.Add(appDataNpm);
 
