@@ -34,19 +34,40 @@ No PowerShell and no browser are needed at runtime.
 
 Run `.\tools\update-icons.ps1` any time to re-fetch and regenerate `icon-light.ico` / `icon-dark.ico` / `app.ico` (or `build.ps1 -RefreshIcons`), and `-SkipDownload` to regenerate offline from the committed sources.
 
-## Get the exe
+## Portable builds
 
-- **Build it yourself** (you have the .NET SDK):
-  ```powershell
-  .\build.ps1              # framework-dependent single file (needs .NET 8 runtime)
-  .\build.ps1 -SelfContained   # standalone, runs on any Win10/11 x64
-  # or directly:
-  # dotnet publish src/DeepSeekHarness -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o dist
-  ```
-  Output: `dist\DeepSeekHarness.exe`
-- **GitHub Actions**: every push to `main` (and every `v*` tag) builds a self-contained `DeepSeekHarness-win-x64` artifact — grab it from the Actions page of your fork/copy of this repo.
+The portable artifacts bundle the .NET runtime — **no .NET installation is
+needed on the target machine** (only the WebView2 Runtime, which Windows 11
+and most Windows 10 machines already have). Build them with one script:
 
-Double-click `dist\DeepSeekHarness.exe` — done.
+```powershell
+.\build.ps1                    # dev exe -> dist\ (framework-dependent, needs .NET 8 runtime)
+.\build.ps1 -Portable          # self-contained folder + release zip  (CyberleekViewer-style)
+.\build.ps1 -SingleFile        # one self-contained exe + release zip (BunkrDownloader-style)
+.\build.ps1 -Portable -RefreshIcons   # re-fetch official icons first
+```
+
+Output in `release\` (git-ignored — publish via GitHub Releases):
+
+- `DeepSeekHarness-portable-win-x64-<ver>\` + `.zip` — portable **folder**
+  (exe + DLLs). Chosen as the default portable layout because folder builds
+  start faster and trigger fewer antivirus false positives than a bundled
+  single file (same reasoning as the PyInstaller folder builds in
+  cyberleek-viewer).
+- `DeepSeekHarness-win-x64-<ver>.exe` + `.zip` — lone **single-file** exe
+  (runtime and native libs bundled, extracted to `%TEMP%` on first start).
+
+**Visual Studio users:** open `DeepSeekHarness.sln`. The project ships two
+ready-made publish profiles (`Properties\PublishProfiles`) — right-click the
+project → **Publish** → `PortableFolder` or `PortableSingleFile` — the VS
+equivalent of the `.spec` files in the Python repos.
+
+**GitHub Actions:** every push to `main` (and every `v*` tag) publishes the
+portable folder and uploads `DeepSeekHarness-portable-win-x64.zip` as a build
+artifact — grab it from the Actions page, or attach it to a Release.
+
+Download or build once, unzip anywhere, double-click `DeepSeekHarness.exe` —
+done.
 
 ## Usage
 
@@ -73,18 +94,21 @@ DeepSeekHarness.exe --no-window        headless boot test: start, verify, stop
 
 ```
 deepseek-harness-windows-native/
-├─ build.ps1                    # publish helper (dist\DeepSeekHarness.exe, -RefreshIcons)
-├─ tools\update-icons.ps1       # fetch official icons + regenerate .ico assets
-├─ assets\                      # icon sources (deepseek.com / platform.deepseek.com) + notes
-├─ src\DeepSeekHarness\         # C# .NET 8 WinForms + WebView2 app
-│  ├─ DeepSeekHarness.csproj    # ApplicationIcon + embedded theme icons
-│  ├─ Program.cs / Options.cs   # entry point and CLI parsing
-│  ├─ Orchestrator.cs           # update -> boot -> ready -> window flow
-│  ├─ ServerManager.cs          # spawn/kill of `dsh web`
-│  ├─ MainForm.cs               # the WebView2 window (theme-aware chrome)
-│  ├─ NativeTheme.cs            # DWM dark/caption colors, OS theme detection
-│  └─ ...                       # tools discovery, logging, probes, updater
-├─ .github\workflows\build.yml  # Windows build of the self-contained exe
+├─ DeepSeekHarness.sln         # open this in Visual Studio
+├─ build.ps1                   # dev / -Portable / -SingleFile builds (+ zips)
+├─ tools\update-icons.ps1      # fetch official icons + regenerate .ico assets
+├─ assets\                     # icon sources (deepseek.com / platform.deepseek.com) + notes
+├─ src\DeepSeekHarness\        # C# .NET 8 WinForms + WebView2 app
+│  ├─ DeepSeekHarness.csproj   # ApplicationIcon + embedded theme icons
+│  ├─ Properties\PublishProfiles\   # PortableFolder / PortableSingleFile (VS Publish)
+│  ├─ Program.cs / Options.cs  # entry point and CLI parsing
+│  ├─ Orchestrator.cs          # update -> boot -> ready -> window flow
+│  ├─ ServerManager.cs         # spawn/kill of `dsh web`
+│  ├─ MainForm.cs              # the WebView2 window (theme-aware chrome)
+│  ├─ NativeTheme.cs           # DWM dark/caption colors, OS theme detection
+│  └─ ...                      # tools discovery, logging, probes, updater
+├─ .github\workflows\build.yml # portable folder + zip artifact on every push/tag
+├─ release\                    # portable artifacts (git-ignored)
 ├─ README.md
 └─ LICENSE
 ```
