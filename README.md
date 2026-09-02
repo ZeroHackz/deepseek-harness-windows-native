@@ -44,6 +44,7 @@ and most Windows 10 machines already have). Build them with one script:
 .\build.ps1                    # dev exe -> dist\ (framework-dependent, needs .NET 8 runtime)
 .\build.ps1 -Portable          # self-contained folder + release zip  (CyberleekViewer-style)
 .\build.ps1 -SingleFile        # one self-contained exe + release zip (BunkrDownloader-style)
+.\build_portable.ps1           # quick single-file build: one exe + zip, no DLLs
 .\build.ps1 -Portable -RefreshIcons   # re-fetch official icons first
 ```
 
@@ -56,6 +57,8 @@ Output in `release\` (git-ignored — publish via GitHub Releases):
   cyberleek-viewer).
 - `DeepSeekHarness-win-x64-<ver>.exe` + `.zip` — lone **single-file** exe
   (runtime and native libs bundled, extracted to `%TEMP%` on first start).
+  `build_portable.ps1` is the dedicated one-command build for exactly this:
+  `pwsh -File .\build_portable.ps1` (optionally `-RefreshIcons`).
 
 **Visual Studio users:** open `DeepSeekHarness.sln`. The project ships two
 ready-made publish profiles (`Properties\PublishProfiles`) — right-click the
@@ -96,6 +99,7 @@ DeepSeekHarness.exe --no-window        headless boot test: start, verify, stop
 deepseek-harness-windows-native/
 ├─ DeepSeekHarness.sln         # open this in Visual Studio
 ├─ build.ps1                   # dev / -Portable / -SingleFile builds (+ zips)
+├─ build_portable.ps1          # quick single-file build (one exe + zip, no DLLs)
 ├─ tools\update-icons.ps1      # fetch official icons + regenerate .ico assets
 ├─ assets\                     # icon sources (deepseek.com / platform.deepseek.com) + notes
 ├─ src\DeepSeekHarness\        # C# .NET 8 WinForms + WebView2 app
