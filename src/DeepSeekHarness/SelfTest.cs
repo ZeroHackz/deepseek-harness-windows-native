@@ -3,7 +3,8 @@ using System;
 namespace DShNative;
 
 /**
- * --self-test: environment report (console + log file), always exit 0.
+ * --self-test: dumps an environment report to the console and the log.
+ * Always exits 0 - it is a diagnostic, not a check.
  */
 public static class SelfTest
 {

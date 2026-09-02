@@ -5,7 +5,7 @@ using System.Net.Sockets;
 namespace DShNative;
 
 /**
- * Loopback probes: TCP reachability and HTTP 200 checks.
+ * Quick loopback checks: is the port open at all, and does it answer HTTP 200.
  */
 public static class NetProbe
 {

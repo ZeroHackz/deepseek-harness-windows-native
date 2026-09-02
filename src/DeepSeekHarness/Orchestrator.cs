@@ -5,8 +5,9 @@ using System.Windows.Forms;
 namespace DShNative;
 
 /**
- * Main flow: tool discovery -> auto-update -> attach-or-own the server ->
- * wait for readiness -> show the window -> stop the server on close.
+ * The whole flow, in order: find the tools -> maybe update dsh -> attach
+ * to a server that already runs, or boot our own -> wait until it answers ->
+ * show the window -> stop the server once the window is closed.
  */
 public static class Orchestrator
 {
@@ -143,8 +144,8 @@ public static class Orchestrator
     }
 
     /**
-     * Shows the WebView2 window and blocks until it closes. In owned mode the
-     * managed server is stopped afterwards.
+     * Opens the window and blocks until the user closes it. When we own the
+     * server, shut it down afterwards.
      */
     private static int RunWindow(Options o, bool owned, int managedPid)
     {

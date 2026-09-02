@@ -3,7 +3,7 @@ using System;
 namespace DShNative;
 
 /**
- * --stop: stop the managed server this app previously started.
+ * --stop: kill the dsh web server this app started earlier.
  */
 public static class StopOnly
 {

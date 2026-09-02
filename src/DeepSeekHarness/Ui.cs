@@ -4,7 +4,8 @@ using System.Windows.Forms;
 namespace DShNative;
 
 /**
- * User-facing error reporting (message box in GUI modes, log always).
+ * Shows errors to the user. Pop a message box when we actually have a UI;
+ * otherwise just log and move on.
  */
 public static class Ui
 {

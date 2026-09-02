@@ -4,7 +4,9 @@ using System.IO;
 namespace DShNative;
 
 /**
- * Auto-update of the global @deepseek-ai/dsh npm package (non-fatal).
+ * Tries to keep the global @deepseek-ai/dsh on the latest npm tag. Fails
+ * soft on purpose: if npm is missing or the update errors out, we simply
+ * keep using whatever is installed.
  */
 public static class Updater
 {

@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 namespace DShNative;
 
 /**
- * Windows theming interop: OS dark/light detection, immersive (dark)
- * title bars, and per-window caption/border/text colors on Windows 11 22H2+.
+ * DWM interop: detect the OS dark/light theme and drive the title-bar look -
+ * immersive dark mode, plus caption/border/text colors on Win11 22H2+.
  */
 public static class NativeTheme
 {
@@ -22,7 +22,7 @@ public static class NativeTheme
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int attributeValue, int attributeSize);
 
     /**
-     * True when Windows uses the dark app theme (AppsUseLightTheme = 0).
+     * True when Windows apps are in dark mode (AppsUseLightTheme = 0).
      */
     public static bool IsSystemDark()
     {
@@ -39,7 +39,7 @@ public static class NativeTheme
     }
 
     /**
-     * True on Windows 11 22H2+ where caption/border/text colors are supported.
+     * Win11 22H2+ only - older builds simply ignore the color attributes.
      */
     public static bool SupportsCustomCaptionColors => Environment.OSVersion.Version.Build >= 22621;
 
@@ -73,12 +73,13 @@ public static class NativeTheme
     }
 
     /**
-     * COLORREF layout is 0x00BBGGRR, while Color.ToArgb is 0xAARRGGBB.
+     * DWM wants COLORREF (0x00BBGGRR); Color.ToArgb hands us 0xAARRGGBB,
+     * so swap the red and blue bytes around.
      */
     private static int ToColorRef(Color color) => color.R | (color.G << 8) | (color.B << 16);
 
     /**
-     * Perceived luminance in [0,1]; < 0.45 reads as a dark background.
+     * Rough perceived luminance; below 0.45 we call the color dark.
      */
     public static bool IsDark(Color color)
     {

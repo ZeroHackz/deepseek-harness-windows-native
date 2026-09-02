@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 namespace DShNative;
 
 /**
- * Child-process helpers with file-captured output and tree-kill support.
+ * Helpers around child processes: capture output to files, kill whole trees.
  */
 public static class Proc
 {
     /**
-     * Runs a process to completion. stdout/stderr are captured to files when
-     * outFile/errFile are non-null. Returns the exit code, -1 on start
-     * failure, -999 on timeout (the process tree is killed).
+     * Runs a process and waits for it to finish. stdout/stderr land in files
+     * when outFile/errFile are given. Returns the process exit code; -1 when
+     * it never even started; -999 on timeout (the whole tree gets killed).
      */
     public static int Run(string exePath, string[] args, string? outFile, string? errFile, int timeoutMs)
     {
@@ -65,7 +65,8 @@ public static class Proc
     }
 
     /**
-     * Starts a process and returns its pid (0 on failure). Output is captured to files.
+     * Fire-and-forget process start (used for the server). Output goes to
+     * files. Returns the pid, or 0 if it failed to start.
      */
     public static int Spawn(string exePath, string[] args, string outFile, string errFile)
     {

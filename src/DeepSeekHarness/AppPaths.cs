@@ -4,7 +4,8 @@ using System.IO;
 namespace DShNative;
 
 /**
- * Local app-data layout: logs, WebView2 user data, pid/lock files.
+ * Where we keep our stuff under %LOCALAPPDATA%\DeepSeekHarness:
+ * logs, WebView2 data, and the pid/lock files for server ownership.
  */
 public static class AppPaths
 {

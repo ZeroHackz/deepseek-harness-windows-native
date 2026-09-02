@@ -3,7 +3,7 @@ using System;
 namespace DShNative;
 
 /**
- * Command-line options of the DeepSeek Harness desktop app.
+ * The CLI flags this app understands (see README for what each does).
  */
 public sealed class Options
 {
@@ -16,7 +16,8 @@ public sealed class Options
     public int ReadyTimeoutSec { get; private set; } = 120;
 
     /**
-     * Whether error message boxes are appropriate (no, in test modes).
+     * True when a message box is appropriate, i.e. not in --self-test or
+     * --no-window mode (nobody is looking at a window there).
      */
     public bool ShowDialogs => !NoWindow && !SelfTest;
 

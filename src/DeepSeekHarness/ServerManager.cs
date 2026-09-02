@@ -4,12 +4,13 @@ using System.IO;
 namespace DShNative;
 
 /**
- * Lifecycle of the managed `dsh web` child process.
+ * Owns the dsh web child process: start it, stop it, remember its pid.
  */
 public static class ServerManager
 {
     /**
-     * Starts `dsh web --no-open` as a child; returns its pid (0 on failure).
+     * Spawns `dsh web --no-open` with our host/port. Returns the pid,
+     * or 0 when it could not be started.
      */
     public static int Start(Tools t, Options o)
     {
@@ -42,7 +43,8 @@ public static class ServerManager
     }
 
     /**
-     * --stop: kill whatever server this app previously started. Returns 1 when killed.
+     * --stop: read the pid file and kill that server. Returns 1 when
+     * something actually got killed.
      */
     public static int StopByPidFile()
     {

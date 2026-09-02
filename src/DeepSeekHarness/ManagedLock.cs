@@ -4,8 +4,9 @@ using System.IO;
 namespace DShNative;
 
 /**
- * Single-instance guard for the owned (server-booting) mode. The first
- * instance to acquire the lock owns the server; later ones wait and attach.
+ * One launcher boots the server, everyone else attaches. The lock is a
+ * simple pid file: whoever wrote it owns the server, latecomers wait for
+ * the port and then behave like attach mode.
  */
 public sealed class ManagedLock : IDisposable
 {
@@ -34,8 +35,9 @@ public sealed class ManagedLock : IDisposable
         }
         catch
         {
-            // Degrade gracefully: without the lock we behave like a peer that
-            // waits for the port and attaches (never kills a server).
+            // Lock file broken or unwritable - degrade to a plain peer that
+            // waits for the port and attaches. Never kill anything we may
+            // not own.
             return new ManagedLock(path, owner: false);
         }
     }

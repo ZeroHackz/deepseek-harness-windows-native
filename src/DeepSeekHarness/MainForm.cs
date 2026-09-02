@@ -9,17 +9,18 @@ using Microsoft.Web.WebView2.WinForms;
 namespace DShNative;
 
 /**
- * The app window: a WebView2 (shared Edge runtime) rendering the harness UI.
- * No browser profile, no sign-in, no sync - only a private user-data folder.
+ * The actual window: a WebView2 (shared Edge runtime) rendering the harness
+ * UI. No browser profile, no sign-in, no sync - just a private user-data
+ * folder.
  *
- * Theming: the window icon is the official DeepSeek logo variant matching
- * the OS theme (deepseek.com blue whale in light mode, platform.deepseek.com
- * white whale in dark mode), and the title bar/caption follows the *measured*
- * background of the rendered page instead of staying white.
+ * Look & feel: the icon follows the OS theme (blue whale in light mode,
+ * white whale in dark), and once the page has rendered we measure its real
+ * background and re-theme the title bar to match - otherwise you get a
+ * white bar on top of a dark app, which looks broken.
  */
 public sealed class MainForm : Form
 {
-    // JS that returns the effective page background (body, then html).
+    // Reads the page's real background via JS: body first, then <html>.
     private const string BgScript =
         "(function(){try{var s=getComputedStyle(document.body).backgroundColor;" +
         "if(!s||s==='transparent'||s==='rgba(0, 0, 0, 0)'){s=getComputedStyle(document.documentElement).backgroundColor;}" +
@@ -73,7 +74,8 @@ public sealed class MainForm : Form
     }
 
     /**
-     * React to Windows theme switches (icon + defaults while unmeasured).
+     * Windows flipped its theme - swap the icon and, until we measured the
+     * page, refresh the OS-based defaults too.
      */
     protected override void WndProc(ref Message m)
     {
@@ -136,7 +138,8 @@ public sealed class MainForm : Form
     }
 
     /**
-     * Sample the rendered page's real background so the window chrome can match it.
+     * Asks the rendered page what its background color is, then re-themes
+     * the window chrome to match.
      */
     private async Task MeasurePageBackgroundAsync()
     {
@@ -159,14 +162,14 @@ public sealed class MainForm : Form
         }
         catch
         {
-            // keep the OS-based theme when the measurement fails
+            // measurement failed - the OS-based theme is a fine fallback
         }
     }
 
     /**
-     * DWM chrome: immersive dark caption when the app is dark, and on
-     * Windows 11 22H2+ the caption/border colors are set to the page
-     * background itself so the title bar blends with the app content.
+     * Drives the DWM chrome: immersive dark caption for dark content, and on
+     * Win11 22H2+ paint the caption/border in the page's own background so
+     * the title bar visually disappears into the app.
      */
     private void ApplyWindowChrome()
     {
