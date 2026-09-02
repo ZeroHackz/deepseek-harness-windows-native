@@ -8,6 +8,27 @@ src/**/obj/
 .testhome/
 logs/
 
-# IDE noise
+# IDE / editor noise
 .vs/
 *.user
+*.suo
+*.csproj.user
+.idea/
+.vscode/
+
+# Secrets & env files (belt and braces - never commit these)
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*
+*.token
+
+# Misc junk
+*.log
+*.nupkg
+Thumbs.db
+desktop.ini
+.DS_Store
