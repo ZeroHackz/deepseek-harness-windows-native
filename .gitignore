@@ -1,0 +1,12 @@
+# Build output
+dist/
+src/**/bin/
+src/**/obj/
+
+# Local scratch
+.testhome/
+logs/
+
+# IDE noise
+.vs/
+*.user
