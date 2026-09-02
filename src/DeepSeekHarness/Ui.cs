@@ -3,7 +3,9 @@ using System.Windows.Forms;
 
 namespace DShNative;
 
-/** <summary>User-facing error reporting (message box in GUI modes, log always).</summary> */
+/**
+ * User-facing error reporting (message box in GUI modes, log always).
+ */
 public static class Ui
 {
     public static void Error(Options o, string message)

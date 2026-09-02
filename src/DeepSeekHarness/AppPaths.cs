@@ -3,7 +3,9 @@ using System.IO;
 
 namespace DShNative;
 
-/** <summary>Local app-data layout: logs, WebView2 user data, pid/lock files.</summary> */
+/**
+ * Local app-data layout: logs, WebView2 user data, pid/lock files.
+ */
 public static class AppPaths
 {
     public static string Root { get; } = Path.Combine(

@@ -3,7 +3,9 @@ using System.IO;
 
 namespace DShNative;
 
-/** <summary>Timestamped logging to console (when attached) and to the log file.</summary> */
+/**
+ * Timestamped logging to console (when attached) and to the log file.
+ */
 public static class Log
 {
     private static readonly object Sync = new();

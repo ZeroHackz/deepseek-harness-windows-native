@@ -2,7 +2,9 @@ using System;
 
 namespace DShNative;
 
-/** <summary>--stop: stop the managed server this app previously started.</summary> */
+/**
+ * --stop: stop the managed server this app previously started.
+ */
 public static class StopOnly
 {
     public static int Run(Options o)

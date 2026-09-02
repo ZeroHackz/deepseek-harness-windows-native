@@ -4,7 +4,9 @@ using System.Net.Sockets;
 
 namespace DShNative;
 
-/** <summary>Loopback probes: TCP reachability and HTTP 200 checks.</summary> */
+/**
+ * Loopback probes: TCP reachability and HTTP 200 checks.
+ */
 public static class NetProbe
 {
     public static bool IsOpen(string host, int port, int timeoutMs = 600)

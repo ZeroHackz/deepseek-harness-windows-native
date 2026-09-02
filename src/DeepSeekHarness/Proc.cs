@@ -5,15 +5,15 @@ using System.Threading.Tasks;
 
 namespace DShNative;
 
-/** <summary>Child-process helpers with file-captured output and tree-kill support.</summary> */
+/**
+ * Child-process helpers with file-captured output and tree-kill support.
+ */
 public static class Proc
 {
     /**
-     * <summary>
      * Runs a process to completion. stdout/stderr are captured to files when
      * outFile/errFile are non-null. Returns the exit code, -1 on start
      * failure, -999 on timeout (the process tree is killed).
-     * </summary>
      */
     public static int Run(string exePath, string[] args, string? outFile, string? errFile, int timeoutMs)
     {
@@ -64,7 +64,9 @@ public static class Proc
         }
     }
 
-    /** <summary>Starts a process and returns its pid (0 on failure). Output is captured to files.</summary> */
+    /**
+     * Starts a process and returns its pid (0 on failure). Output is captured to files.
+     */
     public static int Spawn(string exePath, string[] args, string outFile, string errFile)
     {
         var psi = new ProcessStartInfo

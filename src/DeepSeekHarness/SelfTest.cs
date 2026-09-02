@@ -2,7 +2,9 @@ using System;
 
 namespace DShNative;
 
-/** <summary>--self-test: environment report (console + log file), always exit 0.</summary> */
+/**
+ * --self-test: environment report (console + log file), always exit 0.
+ */
 public static class SelfTest
 {
     public static int Run(Options o)

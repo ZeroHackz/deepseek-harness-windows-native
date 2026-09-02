@@ -3,7 +3,9 @@ using System.IO;
 
 namespace DShNative;
 
-/** <summary>Auto-update of the global @deepseek-ai/dsh npm package (non-fatal).</summary> */
+/**
+ * Auto-update of the global @deepseek-ai/dsh npm package (non-fatal).
+ */
 public static class Updater
 {
     public static void Run(Tools t, Options o)
