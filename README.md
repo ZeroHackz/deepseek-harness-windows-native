@@ -23,9 +23,16 @@ All harness state lives in files under `DSH_HOME` (default `C:\Users\<you>\.dsh`
   ```powershell
   npm install -g @deepseek-ai/dsh
   ```
-- To *build* the exe: the **.NET 8 SDK** (not needed just to run the prebuilt exe)
+- **To *build* the exe**: the **.NET 8 SDK** (not needed just to run the prebuilt exe)
 
 No PowerShell and no browser are needed at runtime.
+
+## Icons & theming
+
+- The app and window icons are the **official DeepSeek artwork**, fetched by `tools\update-icons.ps1` straight from the websites: the blue whale from `https://deepseek.com/favicon.ico` (light mode) and the whale from `https://platform.deepseek.com/favicon.svg` (dark mode). The platform file ships as a black silhouette, so the dark-mode icon uses the identical drawing re-tinted white for legibility on dark chrome; the untouched black original is kept in `assets\source`.
+- The window icon switches with the Windows theme, and the **title bar follows the rendered page**: after the UI loads, its background color is measured and applied to the caption/border (Windows 11 22H2+ via DWM caption colors) with a dark immersive caption for dark pages — no more hard-coded white bar. The overlay and the WebView2 default background use the same palette, so nothing flashes white during startup.
+
+Run `.\tools\update-icons.ps1` any time to re-fetch and regenerate `icon-light.ico` / `icon-dark.ico` / `app.ico` (or `build.ps1 -RefreshIcons`), and `-SkipDownload` to regenerate offline from the committed sources.
 
 ## Get the exe
 
@@ -66,13 +73,16 @@ DeepSeekHarness.exe --no-window        headless boot test: start, verify, stop
 
 ```
 deepseek-harness-windows-native/
-├─ build.ps1                    # publish helper (dist\DeepSeekHarness.exe)
+├─ build.ps1                    # publish helper (dist\DeepSeekHarness.exe, -RefreshIcons)
+├─ tools\update-icons.ps1       # fetch official icons + regenerate .ico assets
+├─ assets\                      # icon sources (deepseek.com / platform.deepseek.com) + notes
 ├─ src\DeepSeekHarness\         # C# .NET 8 WinForms + WebView2 app
-│  ├─ DeepSeekHarness.csproj
+│  ├─ DeepSeekHarness.csproj    # ApplicationIcon + embedded theme icons
 │  ├─ Program.cs / Options.cs   # entry point and CLI parsing
 │  ├─ Orchestrator.cs           # update -> boot -> ready -> window flow
 │  ├─ ServerManager.cs          # spawn/kill of `dsh web`
-│  ├─ MainForm.cs               # the WebView2 window
+│  ├─ MainForm.cs               # the WebView2 window (theme-aware chrome)
+│  ├─ NativeTheme.cs            # DWM dark/caption colors, OS theme detection
 │  └─ ...                       # tools discovery, logging, probes, updater
 ├─ .github\workflows\build.yml  # Windows build of the self-contained exe
 ├─ README.md
