@@ -103,6 +103,7 @@ DeepSeekHarness.exe --no-window        headless boot test: start, verify, stop
 ## Notes
 
 *   **No accounts, no sync**: the app talks only to your local `dsh web` on the loopback address; harness data never leaves the machine.
+*   **Versioning**: `<Version>` in the csproj is the intended release date (`yyyy.MM.dd`, e.g. `2026.09.03`). At most one release per day: builds within a day keep that day's version, and anything not tested in time waits for the next day.
 *   This project is an independent wrapper: not affiliated with or endorsed by DeepSeek beyond invoking the official `dsh` CLI and using its public artwork.
 
 ## License
