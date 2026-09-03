@@ -1,12 +1,13 @@
 using System;
 using System.IO;
+using System.Threading;
 
 namespace DShNative;
 
 /** npm-updates the global dsh; fails soft, keeps the installed version. */
 public static class Updater
 {
-    public static void Run(Tools t, Options o)
+    public static void Run(Tools t, Options o, CancellationToken ct = default)
     {
         Log.Info("checking for the latest @deepseek-ai/dsh on npm ...");
         if (string.IsNullOrEmpty(t.Node) || string.IsNullOrEmpty(t.NpmCli))
@@ -21,15 +22,15 @@ public static class Updater
         {
             t.NpmCli, "install", "-g", "@deepseek-ai/dsh@latest",
             "--no-audit", "--no-fund", "--loglevel=error"
-        }, outFile, errFile, 300_000);
+        }, outFile, errFile, 300_000, ct);
 
         if (code == 0)
         {
             Log.Info("npm auto-update finished successfully");
         }
-        else if (code == -999)
+        else if (code is -998 or -999)
         {
-            Log.Warn("npm auto-update timed out after 300s; continuing with the installed dsh");
+            Log.Warn($"npm auto-update did not finish (code {code}); continuing with the installed dsh");
         }
         else
         {

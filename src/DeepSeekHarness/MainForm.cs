@@ -49,7 +49,7 @@ public sealed class MainForm : Form
             Dock = DockStyle.Fill,
             TextAlign = ContentAlignment.MiddleCenter,
             Font = new Font("Segoe UI", 12f),
-            Text = "Starting DeepSeek Harness ...",
+            Text = "Loading the DeepSeek Harness interface ...",
         };
         Controls.Add(_status);
         RecolorStatus();

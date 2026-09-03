@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace DShNative;
@@ -22,7 +23,10 @@ public sealed class ManagedLock : IDisposable
         {
             if (File.Exists(path))
             {
-                if (int.TryParse(File.ReadAllText(path).Trim(), out var pid) && Proc.IsAlive(pid))
+                // Only trust the lock when the owner is a live instance of
+                // this app; a stale pid may have been recycled by something
+                // else entirely.
+                if (int.TryParse(File.ReadAllText(path).Trim(), out var pid) && IsOwnInstance(pid))
                     return new ManagedLock(path, owner: false);
                 try { File.Delete(path); } catch { }
             }
@@ -33,6 +37,21 @@ public sealed class ManagedLock : IDisposable
         {
             // broken lock -> degrade to a peer: attach, never kill
             return new ManagedLock(path, owner: false);
+        }
+    }
+
+    private static bool IsOwnInstance(int pid)
+    {
+        try
+        {
+            // Builds may name the exe differently (e.g. DeepSeekHarness vs
+            // DeepSeekHarness-win-x64-2026.09.26), so match on the prefix.
+            using var p = Process.GetProcessById(pid);
+            return !p.HasExited && p.ProcessName.StartsWith("DeepSeekHarness", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
         }
     }
 

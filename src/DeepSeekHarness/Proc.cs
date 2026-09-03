@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DShNative;
@@ -8,8 +9,8 @@ namespace DShNative;
 /** Child-process helpers: output to files, kill whole trees. */
 public static class Proc
 {
-    /** Runs to completion; exit code, -1 if never started, -999 on timeout (tree killed). */
-    public static int Run(string exePath, string[] args, string? outFile, string? errFile, int timeoutMs)
+    /** Runs to completion; exit code, -1 never started, -998 cancelled, -999 timed out (tree killed). */
+    public static int Run(string exePath, string[] args, string? outFile, string? errFile, int timeoutMs, CancellationToken ct = default)
     {
         var psi = new ProcessStartInfo
         {
@@ -41,12 +42,23 @@ public static class Proc
                 cerr = p.StandardError.BaseStream.CopyToAsync(se);
             }
 
-            if (!p.WaitForExit(timeoutMs))
+            var deadline = Environment.TickCount64 + timeoutMs;
+            while (!p.WaitForExit(250))
             {
-                try { p.Kill(entireProcessTree: true); } catch { }
-                p.WaitForExit(10_000);
-                WaitQuietly(cout, cerr);
-                return -999;
+                if (ct.IsCancellationRequested)
+                {
+                    try { p.Kill(entireProcessTree: true); } catch { }
+                    p.WaitForExit(10_000);
+                    WaitQuietly(cout, cerr);
+                    return -998;
+                }
+                if (Environment.TickCount64 >= deadline)
+                {
+                    try { p.Kill(entireProcessTree: true); } catch { }
+                    p.WaitForExit(10_000);
+                    WaitQuietly(cout, cerr);
+                    return -999;
+                }
             }
             WaitQuietly(cout, cerr);
             return p.ExitCode;
