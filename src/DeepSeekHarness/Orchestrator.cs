@@ -47,6 +47,9 @@ public static class Orchestrator
         using var cts = new CancellationTokenSource();
         using var splash = new SplashForm(o.Url, () => { try { cts.Cancel(); } catch { } });
 
+        // Async work inside the splash (WebView2 init) must resume on the UI
+        // thread that our DoEvents pump below keeps alive.
+        SynchronizationContext.SetSynchronizationContext(new WindowsFormsSynchronizationContext());
         splash.Show();
         var task = Task.Run(() => Boot(o, splash.SetStatus, cts.Token));
 
