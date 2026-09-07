@@ -31,6 +31,7 @@ public sealed class MainForm : Form
     private readonly Label _status;
     private WebView2? _web;
     private Color? _pageBg; // measured from the rendered page once loaded
+    private bool _navFailures;
 
     public MainForm(string url, string userDataDir, bool autoUpdate)
     {
@@ -120,11 +121,46 @@ public sealed class MainForm : Form
     {
         if (!e.IsSuccess || e.HttpStatusCode >= 400)
         {
-            SetStatus("The page could not be loaded.\nIs the DeepSeek Harness server running on " + _url + "?");
+            Log.Info($"nav failed: success={e.IsSuccess} status={e.HttpStatusCode} err={e.WebErrorStatus} url={_url}");
+            // The bare-URL readiness probe answers as soon as the port is up,
+            // but the token-gated app route can take a moment longer. Retry a
+            // bounded number of times before surfacing an error, so the UI
+            // renders inside this window instead of failing on the first hit.
+            if (_url.Contains("?token=", StringComparison.Ordinal))
+            {
+                if (_navFailures < 15)
+                {
+                    _navFailures++;
+                    if (_navFailures == 1)
+                        SetStatus("Waiting for the harness interface ...");
+                    _ = RetryTokenizedNavAsync();
+                    return;
+                }
+                SetStatus("The harness interface did not come up inside the app.\n" +
+                          "You can open it in a browser for now:\n" + _url);
+                return;
+            }
+            SetStatus("This harness server was started outside the app.\n" +
+                      "Open the URL shown in your terminal (it contains ?token=) in a browser,\n" +
+                      "or close it and let DeepSeek Harness start the server.");
             return;
         }
         SetStatus(string.Empty); // hide overlay
         await MeasurePageBackgroundAsync();
+    }
+
+    private async Task RetryTokenizedNavAsync()
+    {
+        try
+        {
+            await Task.Delay(1000);
+            if (!IsDisposed && _web?.CoreWebView2 != null)
+                _web.CoreWebView2.Navigate(_url);
+        }
+        catch
+        {
+            // the window is closing; nothing to do
+        }
     }
 
     /** Self-update flow: check after the window is usable, prompt when a new
