@@ -31,7 +31,7 @@ public sealed class MainForm : Form
     private readonly Label _status;
     private WebView2? _web;
     private Color? _pageBg; // measured from the rendered page once loaded
-    private bool _navFailures;
+    private int _navFailures;
 
     public MainForm(string url, string userDataDir, bool autoUpdate)
     {
