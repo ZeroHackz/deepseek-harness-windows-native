@@ -39,4 +39,19 @@ public static class NetProbe
             return false;
         }
     }
+
+    /// True when the url answers with a 2xx. Used to confirm a recovered
+    /// token is the right one for the live server before its URL is loaded.
+    public static bool IsHttpOk(string url)
+    {
+        try
+        {
+            using var resp = Http.GetAsync(url).GetAwaiter().GetResult();
+            return resp.IsSuccessStatusCode;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
