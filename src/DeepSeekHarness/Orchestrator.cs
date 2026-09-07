@@ -86,11 +86,12 @@ public static class Orchestrator
         // owned modes both recover it from the server logs.
         var pageUrl = o.Url;
         if (r.Token != null) pageUrl = $"{o.Url}/?token={r.Token}";
-        RunWindow(o, owned: r.Mode == Mode.Owned, managedPid: r.Pid, pageUrl: pageUrl);
+        RunWindow(o, owned: r.Mode == Mode.Owned, managedPid: r.Pid, pageUrl: pageUrl,
+                  autoUpdate: !o.NoUpdate && !o.NoWindow);
         return 0;
     }
 
-    private static void RunWindow(Options o, bool owned, int managedPid, string pageUrl)
+    private static void RunWindow(Options o, bool owned, int managedPid, string pageUrl, bool autoUpdate)
     {
         try
         {
@@ -100,7 +101,7 @@ public static class Orchestrator
         }
         catch { }
 
-        using var form = new MainForm(pageUrl, AppPaths.WebView2Data);
+        using var form = new MainForm(pageUrl, AppPaths.WebView2Data, autoUpdate);
         Application.Run(form);
 
         if (owned && managedPid > 0)

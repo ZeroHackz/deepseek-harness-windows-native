@@ -27,14 +27,16 @@ public sealed class MainForm : Form
 
     private readonly string _url;
     private readonly string _userDataDir;
+    private readonly bool _autoUpdate;
     private readonly Label _status;
     private WebView2? _web;
     private Color? _pageBg; // measured from the rendered page once loaded
 
-    public MainForm(string url, string userDataDir)
+    public MainForm(string url, string userDataDir, bool autoUpdate)
     {
         _url = url;
         _userDataDir = userDataDir;
+        _autoUpdate = autoUpdate;
 
         Text = "DeepSeek Harness";
         StartPosition = FormStartPosition.CenterScreen;
@@ -123,6 +125,52 @@ public sealed class MainForm : Form
         }
         SetStatus(string.Empty); // hide overlay
         await MeasurePageBackgroundAsync();
+    }
+
+    /** Self-update flow: check after the window is usable, prompt when a new
+     *  release is downloaded, and hand the swap to a helper on accept. */
+    protected override void OnShown(EventArgs e)
+    {
+        base.OnShown(e);
+        if (_autoUpdate) _ = CheckForUpdateAsync();
+    }
+
+    private async Task CheckForUpdateAsync()
+    {
+        string? staged = null;
+        try
+        {
+            staged = await AppUpdate.DownloadLatestAsync();
+        }
+        catch
+        {
+            // DownloadLatestAsync fails soft; a stray exception must not
+            // take the window down with it.
+        }
+        if (staged == null || IsDisposed) return;
+
+        try
+        {
+            var ask = MessageBox.Show(this,
+                "A new version of DeepSeek Harness is available and has been downloaded.\n\n" +
+                "Restart now to update?",
+                "Update available",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Information);
+            if (ask == DialogResult.Yes)
+            {
+                AppUpdate.PendingApply = staged;
+                Close();
+            }
+            else
+            {
+                AppUpdate.DiscardStaged(staged);
+            }
+        }
+        catch
+        {
+            AppUpdate.DiscardStaged(staged);
+        }
     }
 
     /** Re-themes the chrome to match the rendered page background. */
