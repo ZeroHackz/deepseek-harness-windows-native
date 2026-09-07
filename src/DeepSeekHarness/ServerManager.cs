@@ -1,11 +1,35 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DShNative;
 
 /** Owns the dsh web child: start, stop, remember its pid. */
 public static class ServerManager
 {
+    public static string? LastOutLog { get; private set; }
+
+    /** Token from the newest server log that printed a ready url for this port. */
+    public static string? FindToken(int port)
+    {
+        var tokenRe = new Regex(@"token=([A-Za-z0-9_-]+)", RegexOptions.Compiled);
+        var logs = AppPaths.LogsDir;
+        if (!Directory.Exists(logs)) return null;
+        var wanted = ":" + port + "/?token=";
+        foreach (var f in Directory.EnumerateFiles(logs, "server-*.out.log")
+                     .OrderByDescending(f => new FileInfo(f).LastWriteTime))
+        {
+            string text;
+            try { text = File.ReadAllText(f); }
+            catch { continue; }
+            if (!text.Contains(wanted)) continue;
+            var m = tokenRe.Match(text);
+            if (m.Success) return m.Groups[1].Value;
+        }
+        return null;
+    }
+
     /** Spawns `dsh web --no-open`; returns pid or 0. */
     public static int Start(Tools t, Options o)
     {
@@ -22,6 +46,7 @@ public static class ServerManager
             return 0;
         }
 
+        LastOutLog = outLog;
         try { File.WriteAllText(AppPaths.ServerPidFile, pid.ToString()); } catch { }
         Log.Info($"managed server pid {pid}; logs: {outLog}");
         return pid;

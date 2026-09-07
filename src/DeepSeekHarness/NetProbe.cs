@@ -24,12 +24,15 @@ public static class NetProbe
 
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(4) };
 
-    public static bool IsHttp200(string url)
+    /// True when the url answers HTTP at all (2xx-4xx). dsh token-gates its
+    /// pages since 0.1.2-rc.1, so a plain 401 means the server is up.
+    public static bool IsUp(string url)
     {
         try
         {
             using var resp = Http.GetAsync(url).GetAwaiter().GetResult();
-            return resp.IsSuccessStatusCode;
+            var code = (int)resp.StatusCode;
+            return code >= 200 && code < 500;
         }
         catch
         {

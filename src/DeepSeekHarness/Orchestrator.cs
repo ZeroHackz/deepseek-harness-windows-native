@@ -16,6 +16,7 @@ public static class Orchestrator
         public int Pid;
         public int ExitCode;
         public string? Error;
+        public string? Token;
     }
 
     public static int Run(Options o)
@@ -80,11 +81,16 @@ public static class Orchestrator
         }
         if (r.Mode == Mode.Cancelled) return 0;
 
-        RunWindow(o, owned: r.Mode == Mode.Owned, managedPid: r.Pid);
+        // dsh 0.1.2-rc.1+ gates every page behind ?token=, so the window
+        // needs the token the server printed when it started. Attach and
+        // owned modes both recover it from the server logs.
+        var pageUrl = o.Url;
+        if (r.Token != null) pageUrl = $"{o.Url}/?token={r.Token}";
+        RunWindow(o, owned: r.Mode == Mode.Owned, managedPid: r.Pid, pageUrl: pageUrl);
         return 0;
     }
 
-    private static void RunWindow(Options o, bool owned, int managedPid)
+    private static void RunWindow(Options o, bool owned, int managedPid, string pageUrl)
     {
         try
         {
@@ -94,7 +100,7 @@ public static class Orchestrator
         }
         catch { }
 
-        using var form = new MainForm(o.Url, AppPaths.WebView2Data);
+        using var form = new MainForm(pageUrl, AppPaths.WebView2Data);
         Application.Run(form);
 
         if (owned && managedPid > 0)
@@ -139,7 +145,7 @@ public static class Orchestrator
         if (NetProbe.IsOpen(o.Address, o.Port))
         {
             Say($"A server is already running on port {o.Port} - attaching");
-            return new Outcome { Mode = Mode.Attach };
+            return new Outcome { Mode = Mode.Attach, Token = ServerManager.FindToken(o.Port) };
         }
 
         // One launcher owns the server; everyone else waits and attaches.
@@ -147,7 +153,8 @@ public static class Orchestrator
         if (!guard.Owner)
         {
             Say("Another instance is starting a server; waiting for it ...");
-            if (WaitForReady(o, ct)) return new Outcome { Mode = Mode.Attach };
+            if (WaitForReady(o, ct))
+                return new Outcome { Mode = Mode.Attach, Token = ServerManager.FindToken(o.Port) };
             return Fail(20, $"Another instance is running, but the server on {o.Url} never became ready within {o.ReadyTimeoutSec}s.\nLogs: {AppPaths.LogsDir}");
         }
 
@@ -170,7 +177,7 @@ public static class Orchestrator
             if (NetProbe.IsOpen(o.Address, o.Port))
             {
                 Say("The port became busy during startup - attaching instead");
-                return new Outcome { Mode = Mode.Attach };
+                return new Outcome { Mode = Mode.Attach, Token = ServerManager.FindToken(o.Port) };
             }
 
             Say($"Starting the dsh web server on {o.Url} ...");
@@ -187,8 +194,17 @@ public static class Orchestrator
                 return Fail(21, $"dsh web did not become ready on {o.Url} within {o.ReadyTimeoutSec}s.\nServer logs: {AppPaths.LogsDir}");
             }
 
+            // The token line can trail the HTTP answer by a moment; give it a
+            // second before giving up on recovering the page token.
+            var token = ServerManager.FindToken(o.Port);
+            for (var i = 0; token == null && i < 10; i++)
+            {
+                Thread.Sleep(200);
+                token = ServerManager.FindToken(o.Port);
+            }
+
             Say("Server is ready");
-            return new Outcome { Mode = Mode.Owned, Pid = pid };
+            return new Outcome { Mode = Mode.Owned, Pid = pid, Token = token };
         }
         catch (OperationCanceledException)
         {
@@ -212,7 +228,7 @@ public static class Orchestrator
         while ((DateTime.UtcNow - started).TotalSeconds < o.ReadyTimeoutSec)
         {
             ct.ThrowIfCancellationRequested();
-            if (NetProbe.IsOpen(o.Address, o.Port) && NetProbe.IsHttp200(o.Url))
+            if (NetProbe.IsOpen(o.Address, o.Port) && NetProbe.IsUp(o.Url))
             {
                 Log.Info($"server is ready at {o.Url}");
                 return true;

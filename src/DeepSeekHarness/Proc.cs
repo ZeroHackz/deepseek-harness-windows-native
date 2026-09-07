@@ -91,10 +91,14 @@ public static class Proc
                 p.Dispose();
                 return 0;
             }
-            var so = new FileStream(outFile, FileMode.Create, FileAccess.Write);
-            var se = new FileStream(errFile, FileMode.Create, FileAccess.Write);
-            _ = p.StandardOutput.BaseStream.CopyToAsync(so);
-            _ = p.StandardError.BaseStream.CopyToAsync(se);
+            var so = new FileStream(outFile, FileMode.Create, FileAccess.Write, FileShare.Read,
+                                    8192, FileOptions.Asynchronous);
+            var se = new FileStream(errFile, FileMode.Create, FileAccess.Write, FileShare.Read,
+                                    8192, FileOptions.Asynchronous);
+            var cOut = p.StandardOutput.BaseStream.CopyToAsync(so);
+            var cErr = p.StandardError.BaseStream.CopyToAsync(se);
+            _ = cOut.ContinueWith(_ => so.Dispose(), TaskScheduler.Default);
+            _ = cErr.ContinueWith(_ => se.Dispose(), TaskScheduler.Default);
             return p.Id;
         }
         catch (Exception ex)
