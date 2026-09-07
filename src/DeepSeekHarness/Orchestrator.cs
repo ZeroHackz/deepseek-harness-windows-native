@@ -202,17 +202,16 @@ public static class Orchestrator
                 return Fail(21, $"dsh web did not become ready on {o.Url} within {o.ReadyTimeoutSec}s.\nServer logs: {AppPaths.LogsDir}");
             }
 
-            // The token line can trail the port coming up by a few seconds,
-            // so poll the server log until it appears. Do not give up after
-            // a moment, or the window would load a token-less URL against a
-            // token-gated server and show a 401 page.
-            var token = ServerManager.FindToken(o.Port);
+            // The token is captured in memory from the child's stdout while
+            // it starts, so it is available almost immediately. Poll that
+            // rather than reading the log file, which could lag.
+            var token = ServerManager.LastToken;
             for (var i = 0; token == null && i < 80; i++)
             {
                 Thread.Sleep(250);
-                token = ServerManager.FindToken(o.Port);
+                token = ServerManager.LastToken;
             }
-            Log.Info(token == null ? "no token line recovered from the server log" : "recovered the server token");
+            Log.Info(token == null ? "no token line recovered from the server output" : "recovered the server token");
 
             Say("Server is ready");
             return new Outcome { Mode = Mode.Owned, Pid = pid, Token = token };

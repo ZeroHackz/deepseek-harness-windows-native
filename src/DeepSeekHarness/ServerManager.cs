@@ -12,6 +12,10 @@ public static class ServerManager
 {
     public static string? LastOutLog { get; private set; }
 
+    /// Token captured directly from the child's stdout, set while the server
+    /// process is running. No log-file race, unlike the log scan below.
+    public static string? LastToken { get; set; }
+
     private static readonly Regex TokenRe = new(@"token=([A-Za-z0-9_-]+)", RegexOptions.Compiled);
 
     /// Where a web_token.txt may live: next to the exe, its parent, the app
@@ -87,7 +91,16 @@ public static class ServerManager
 
         Log.Info($"starting managed server: node {t.DshCli} web --no-open --host {o.Address} --port {o.Port}");
         var args = new[] { t.DshCli!, "web", "--no-open", "--host", o.Address, "--port", o.Port.ToString() };
-        var pid = Proc.Spawn(t.Node!, args, outLog, errLog);
+        LastToken = null;
+        var port = o.Port;
+        var pid = Proc.Spawn(t.Node!, args, outLog, errLog, line =>
+        {
+            if (LastToken == null && line != null && line.Contains(":" + port + "/?token="))
+            {
+                var m = TokenRe.Match(line);
+                if (m.Success) LastToken = m.Groups[1].Value;
+            }
+        });
         if (pid <= 0)
         {
             Log.Error("failed to start the managed server");

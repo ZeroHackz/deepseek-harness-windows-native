@@ -70,8 +70,9 @@ public static class Proc
         }
     }
 
-    /** Fire-and-forget start (the server); output to files. Returns pid or 0. */
-    public static int Spawn(string exePath, string[] args, string outFile, string errFile)
+    /** Fire-and-forget start (the server); output to files and a line hook. */
+    public static int Spawn(string exePath, string[] args, string outFile, string errFile,
+                            Action<string>? onStdoutLine = null)
     {
         var psi = new ProcessStartInfo
         {
@@ -95,10 +96,31 @@ public static class Proc
                                     8192, FileOptions.Asynchronous);
             var se = new FileStream(errFile, FileMode.Create, FileAccess.Write, FileShare.Read,
                                     8192, FileOptions.Asynchronous);
-            var cOut = p.StandardOutput.BaseStream.CopyToAsync(so);
-            var cErr = p.StandardError.BaseStream.CopyToAsync(se);
-            _ = cOut.ContinueWith(_ => so.Dispose(), TaskScheduler.Default);
-            _ = cErr.ContinueWith(_ => se.Dispose(), TaskScheduler.Default);
+            var swOut = new StreamWriter(so) { AutoFlush = true };
+            var swErr = new StreamWriter(se) { AutoFlush = true };
+
+            // Read stdout in memory as well as to the log, so the token URL
+            // is available the instant dsh prints it (no file race).
+            _ = Task.Run(async () =>
+            {
+                string? line;
+                while ((line = await p.StandardOutput.ReadLineAsync()) != null)
+                {
+                    try { await swOut.WriteLineAsync(line); } catch { }
+                    try { onStdoutLine?.Invoke(line); } catch { }
+                }
+                try { await swOut.FlushAsync(); swOut.Dispose(); } catch { }
+            });
+            _ = Task.Run(async () =>
+            {
+                string? line;
+                while ((line = await p.StandardError.ReadLineAsync()) != null)
+                {
+                    try { await swErr.WriteLineAsync(line); } catch { }
+                }
+                try { await swErr.FlushAsync(); swErr.Dispose(); } catch { }
+            });
+
             return p.Id;
         }
         catch (Exception ex)
