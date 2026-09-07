@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,22 +12,68 @@ public static class ServerManager
 {
     public static string? LastOutLog { get; private set; }
 
-    /** Token from the newest server log that printed a ready url for this port. */
+    private static readonly Regex TokenRe = new(@"token=([A-Za-z0-9_-]+)", RegexOptions.Compiled);
+
+    /// Where a web_token.txt may live: next to the exe, its parent, the app
+    /// data dir, and the current directory.
+    private static IEnumerable<string> TokenFileCandidates()
+    {
+        var list = new List<string>();
+        try
+        {
+            var exe = Process.GetCurrentProcess().MainModule?.FileName;
+            if (!string.IsNullOrEmpty(exe))
+            {
+                var dir = Path.GetDirectoryName(exe);
+                if (dir != null)
+                {
+                    list.Add(Path.Combine(dir, "web_token.txt"));
+                    var parent = Path.GetDirectoryName(dir);
+                    if (parent != null) list.Add(Path.Combine(parent, "web_token.txt"));
+                }
+            }
+        }
+        catch { }
+        list.Add(Path.Combine(AppPaths.Root, "web_token.txt"));
+        list.Add(Path.Combine(Environment.CurrentDirectory, "web_token.txt"));
+        return list.Distinct();
+    }
+
+    /** Token for a port from the server logs, or from a web_token.txt. */
     public static string? FindToken(int port)
     {
-        var tokenRe = new Regex(@"token=([A-Za-z0-9_-]+)", RegexOptions.Compiled);
+        // newest server log that printed a ready url for this port
         var logs = AppPaths.LogsDir;
-        if (!Directory.Exists(logs)) return null;
-        var wanted = ":" + port + "/?token=";
-        foreach (var f in Directory.EnumerateFiles(logs, "server-*.out.log")
-                     .OrderByDescending(f => new FileInfo(f).LastWriteTime))
+        if (Directory.Exists(logs))
+        {
+            var wanted = ":" + port + "/?token=";
+            foreach (var f in Directory.EnumerateFiles(logs, "server-*.out.log")
+                         .OrderByDescending(f => new FileInfo(f).LastWriteTime))
+            {
+                string text;
+                try { text = File.ReadAllText(f); }
+                catch { continue; }
+                if (!text.Contains(wanted)) continue;
+                var m = TokenRe.Match(text);
+                if (m.Success) return m.Groups[1].Value;
+            }
+        }
+
+        // a server started by start-dsh-web.ps1 writes its url to web_token.txt
+        foreach (var tf in TokenFileCandidates())
         {
             string text;
-            try { text = File.ReadAllText(f); }
+            try
+            {
+                if (!File.Exists(tf)) continue;
+                text = File.ReadAllText(tf);
+            }
             catch { continue; }
-            if (!text.Contains(wanted)) continue;
-            var m = tokenRe.Match(text);
-            if (m.Success) return m.Groups[1].Value;
+            if (text.Contains(":" + port + "/?token="))
+            {
+                var m = TokenRe.Match(text);
+                if (m.Success) return m.Groups[1].Value;
+            }
         }
         return null;
     }
