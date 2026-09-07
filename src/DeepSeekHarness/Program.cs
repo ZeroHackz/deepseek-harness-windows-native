@@ -1,4 +1,5 @@
 using System;
+using System.Windows.Forms;
 
 namespace DShNative;
 
@@ -12,6 +13,12 @@ internal static class Program
             AppPaths.Ensure();
             return AppUpdate.ApplyNow(args[1]);
         }
+
+        // Set DPI awareness before any window is created. PerMonitorV2 keeps
+        // the WebView content crisp on scaled displays, the same as a browser.
+        Application.EnableVisualStyles();
+        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
+        Application.SetCompatibleTextRenderingDefault(false);
 
         var opts = Options.Parse(args);
         AppPaths.Ensure();

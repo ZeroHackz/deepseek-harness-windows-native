@@ -100,14 +100,6 @@ public static class Orchestrator
 
     private static void RunWindow(Options o, bool owned, int managedPid, string pageUrl, bool autoUpdate)
     {
-        try
-        {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
-        }
-        catch { }
-
         using var form = new MainForm(pageUrl, AppPaths.WebView2Data, autoUpdate);
         Application.Run(form);
 
