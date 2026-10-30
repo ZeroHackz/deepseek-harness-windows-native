@@ -32,3 +32,9 @@ credentials*
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Local dev scratch (never part of the release repo)
+web_token.*
+start-dsh-web.ps1
+tools/webview-probe/
+assets/adobe/

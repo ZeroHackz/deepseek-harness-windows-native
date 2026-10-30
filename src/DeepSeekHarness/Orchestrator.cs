@@ -83,15 +83,17 @@ public static class Orchestrator
 
         // dsh 0.1.2-rc.1+ gates every page behind ?token=, so the window
         // needs the token the server printed when it started. Attach and
-        // owned modes both recover it from the server logs. Validate it
-        // against the live server first: a stale token from an older log
-        // would only ever show a 401 page.
+        // owned modes both recover it from the server logs. The newest log for
+        // this port almost always holds the running server's token, so use it
+        // even when a quick probe is ambiguous: a stale token only shows the
+        // usual 401 page, while dropping a good one guarantees a blank one.
         var pageUrl = o.Url;
         if (r.Token != null)
         {
             var candidate = $"{o.Url}/?token={r.Token}";
-            if (NetProbe.IsHttpOk(candidate)) pageUrl = candidate;
-            else Log.Info($"recovered token does not answer 2xx on {o.Url}; loading without it");
+            if (!NetProbe.IsHttpOk(candidate))
+                Log.Info($"token probe did not answer 2xx on {o.Url}; trying the token anyway");
+            pageUrl = candidate;
         }
         RunWindow(o, owned: r.Mode == Mode.Owned, managedPid: r.Pid, pageUrl: pageUrl,
                   autoUpdate: !o.NoUpdate && !o.NoWindow);

@@ -47,15 +47,15 @@ Prerequisites: **Windows 10/11 x64**, **PowerShell 7+**, and the **.NET 8 SDK**.
     ```
 2.  Build the portable single-file executable (no DLLs, runtime bundled):
     ```powershell
-    pwsh -File .\build_portable.ps1
+    .\build.ps1 -SingleFile
     ```
     The `.exe` and a `.zip` land in `release\` (git-ignored - publish them via GitHub Releases).
 3.  Alternative builds:
     ```powershell
     .\build.ps1                   # dev exe -> dist\ (framework-dependent, needs .NET 8 runtime)
     .\build.ps1 -Portable         # self-contained folder + zip (CyberleekViewer-style layout)
-    .\build.ps1 -SingleFile       # lone self-contained exe + zip
-    .\build_portable.ps1 -RefreshIcons   # re-fetch official DeepSeek icons first
+    .\build.ps1 -SingleFile       # lone self-contained exe + zip (the release build)
+    .\build.ps1 -SingleFile -RefreshIcons   # re-fetch official DeepSeek icons first
     ```
 4.  **Visual Studio:** open `DeepSeekHarness.sln`, right-click the project → **Publish…** → pick the `PortableFolder` or `PortableSingleFile` profile.
 
