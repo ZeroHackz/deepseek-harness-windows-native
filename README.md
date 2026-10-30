@@ -17,7 +17,7 @@ The window is rendered by the **WebView2 Runtime** - Microsoft's embeddable engi
 
 *   **Native window, no browser involved:** The UI runs in an embedded WebView2 window - no Edge/Chrome/Firefox, no browser profiles, no sign-in or sync prompts, nothing shared with your browsing.
 *   **Portable single-file executable:** One `.exe`, no DLLs next to it, no Python/.NET/Node installation needed on the target machine (runtime is bundled). Download, double-click, done.
-*   **Always the latest harness:** On launch the app runs `npm install -g @deepseek-ai/dsh@latest` (non-fatal, skippable with `--no-update`) and boots whatever npm delivers.
+*   **Always the latest harness, without the wait:** On launch the app asks the npm registry for the dsh version (a fraction of a second) and boots immediately. Only when a newer version exists does it install in the background, applied on the next launch; skippable with `--no-update`.
 *   **Managed server lifecycle:** It starts `dsh web --no-open` on `127.0.0.1:3080` as a hidden child and **closing the window stops the server**. If a server is already running (e.g. one you started by hand), it **attaches** instead: opens the window, never touches that server, and leaves it running when the window closes.
 *   **Your data stays local files:** Sessions, settings and storages live under `DSH_HOME` (default `C:\Users\<you>\.dsh`) - nothing is uploaded or synced; the wrapper only reads/writes what `dsh` itself uses.
 *   **Official DeepSeek artwork:** Window/exe icons are fetched from the real websites - the blue whale from `deepseek.com` in light mode, the white whale from `platform.deepseek.com` in dark mode - and the window swaps them with the Windows theme.

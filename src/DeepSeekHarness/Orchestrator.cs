@@ -119,6 +119,7 @@ public static class Orchestrator
     {
         void Say(string msg) { status?.Invoke(msg); Log.Info(msg); }
         var noUpdate = o.NoUpdate;
+        var bootStart = DateTime.UtcNow;
 
         var tools = Tools.Discover();
         if (tools.Node == null)
@@ -132,7 +133,7 @@ public static class Orchestrator
                 return Fail(11, "@deepseek-ai/dsh is not installed globally.\nRun:  npm install -g @deepseek-ai/dsh\n(or launch without --no-update so the app installs it).");
             }
             Say("Installing @deepseek-ai/dsh via npm ...");
-            Updater.Run(tools, o, ct);
+            Updater.InstallNow(tools, ct);
             ct.ThrowIfCancellationRequested();
             tools = Tools.Discover();
             if (tools.DshMissing)
@@ -145,6 +146,7 @@ public static class Orchestrator
         if (NetProbe.IsOpen(o.Address, o.Port))
         {
             Say($"A server is already running on port {o.Port} - attaching");
+            if (!noUpdate) Updater.ScheduleBackground(tools, install: false);
             return new Outcome { Mode = Mode.Attach, Token = ServerManager.FindToken(o.Port) };
         }
 
@@ -154,29 +156,21 @@ public static class Orchestrator
         {
             Say("Another instance is starting a server; waiting for it ...");
             if (WaitForReady(o, ct))
+            {
+                if (!noUpdate) Updater.ScheduleBackground(tools, install: false);
                 return new Outcome { Mode = Mode.Attach, Token = ServerManager.FindToken(o.Port) };
+            }
             return Fail(20, $"Another instance is running, but the server on {o.Url} never became ready within {o.ReadyTimeoutSec}s.\nLogs: {AppPaths.LogsDir}");
         }
 
         var pid = 0;
         try
         {
-            if (!noUpdate)
-            {
-                Say("Updating @deepseek-ai/dsh to the latest npm release ...");
-                Updater.Run(tools, o, ct);
-                ct.ThrowIfCancellationRequested();
-                tools = Tools.Discover();
-                if (tools.DshMissing)
-                {
-                    return Fail(13, "The dsh CLI disappeared after the update; run  npm install -g @deepseek-ai/dsh  and retry.");
-                }
-            }
-
-            // Another launcher may have grabbed the port while npm was running
+            // Another launcher may have grabbed the port in the meantime
             if (NetProbe.IsOpen(o.Address, o.Port))
             {
                 Say("The port became busy during startup - attaching instead");
+                if (!noUpdate) Updater.ScheduleBackground(tools, install: false);
                 return new Outcome { Mode = Mode.Attach, Token = ServerManager.FindToken(o.Port) };
             }
 
@@ -206,6 +200,11 @@ public static class Orchestrator
             Log.Info(token == null ? "no token line recovered from the server output" : "recovered the server token");
 
             Say("Server is ready");
+            var seconds = (DateTime.UtcNow - bootStart).TotalSeconds;
+            Log.Info($"boot to ready in {seconds:0.0}s");
+            // Check npm only after the window is usable; a real update installs
+            // in the background and applies on the next launch.
+            if (!noUpdate) Updater.ScheduleBackground(tools, install: true);
             return new Outcome { Mode = Mode.Owned, Pid = pid, Token = token };
         }
         catch (OperationCanceledException)
