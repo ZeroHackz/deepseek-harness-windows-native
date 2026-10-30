@@ -32,6 +32,9 @@ public sealed class MainForm : Form
     private WebView2? _web;
     private Color? _pageBg; // measured from the rendered page once loaded
     private int _navFailures;
+    private NotifyIcon? _tray;
+    private FormWindowState _preFullState;
+    private FormBorderStyle _preFullBorder;
 
     public MainForm(string url, string userDataDir, bool autoUpdate)
     {
@@ -56,9 +59,10 @@ public sealed class MainForm : Form
         };
         Controls.Add(_status);
         RecolorStatus();
+        InitTray();
 
         Load += OnLoadAsync;
-        FormClosing += (_, _) => _web?.Dispose();
+        FormClosing += OnFormClosingSafe;
     }
 
     protected override void OnHandleCreated(EventArgs e)
@@ -73,6 +77,7 @@ public sealed class MainForm : Form
         if (m.Msg == NativeTheme.WmSettingChange && !IsDisposed)
         {
             Icon = NativeTheme.IsSystemDark() ? IconDark : IconLight;
+            UpdateTrayIcon();
             if (_pageBg == null)
             {
                 ApplyPalette(null);
@@ -100,6 +105,7 @@ public sealed class MainForm : Form
                     web.CoreWebView2.Settings.IsStatusBarEnabled = false;
                     web.DefaultBackgroundColor = CurrentBackground();
                     web.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
+                    web.CoreWebView2.ContainsFullScreenElementChanged += OnFullScreenChanged;
                     web.CoreWebView2.Navigate(_url);
                 }
                 else
@@ -271,6 +277,72 @@ public sealed class MainForm : Form
     }
 
     private Color CurrentBackground() => _pageBg ?? (NativeTheme.IsSystemDark() ? DarkBg : LightBg);
+
+    // --------------------------------------------------------------- tray
+
+    private void InitTray()
+    {
+        var menu = new ContextMenuStrip { ShowImageMargin = false };
+        menu.Items.Add(new ToolStripMenuItem("Tonen", null, (_, _) => ShowFromTray()));
+        menu.Items.Add(new ToolStripMenuItem("Herladen", null, (_, _) => _web?.CoreWebView2?.Reload()));
+        menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add(new ToolStripMenuItem("Sluiten", null, (_, _) => Close()));
+
+        _tray = new NotifyIcon
+        {
+            Icon = NativeTheme.IsSystemDark() ? IconDark : IconLight,
+            Text = "DeepSeek Harness",
+            Visible = true,
+            ContextMenuStrip = menu,
+        };
+        _tray.DoubleClick += (_, _) => ShowFromTray();
+    }
+
+    private void UpdateTrayIcon()
+    {
+        if (_tray != null)
+            _tray.Icon = NativeTheme.IsSystemDark() ? IconDark : IconLight;
+    }
+
+    private void ShowFromTray()
+    {
+        if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
+        Show();
+        Activate();
+    }
+
+    private void OnFormClosingSafe(object? sender, FormClosingEventArgs e)
+    {
+        if (_tray != null)
+        {
+            _tray.Visible = false;
+            _tray.Dispose();
+            _tray = null;
+        }
+        _web?.Dispose();
+    }
+
+    /** HTML5 fullscreen: a maximized window only covers the work area, so go
+     *  borderless over the full screen bounds and keep the taskbar hidden. */
+    private void OnFullScreenChanged(object? sender, object e)
+    {
+        var full = _web?.CoreWebView2?.ContainsFullScreenElement == true;
+        if (full)
+        {
+            _preFullState = WindowState;
+            _preFullBorder = FormBorderStyle;
+            FormBorderStyle = FormBorderStyle.None;
+            TopMost = true;
+            WindowState = FormWindowState.Normal;
+            Bounds = Screen.FromControl(this).Bounds;
+        }
+        else
+        {
+            TopMost = false;
+            FormBorderStyle = _preFullBorder;
+            WindowState = _preFullState;
+        }
+    }
 
     private void SetStatus(string text)
     {

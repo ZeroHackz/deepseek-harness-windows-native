@@ -22,6 +22,8 @@ The window is rendered by the **WebView2 Runtime** - Microsoft's embeddable engi
 *   **Your data stays local files:** Sessions, settings and storages live under `DSH_HOME` (default `C:\Users\<you>\.dsh`) - nothing is uploaded or synced; the wrapper only reads/writes what `dsh` itself uses.
 *   **Official DeepSeek artwork:** Window/exe icons are fetched from the real websites - the blue whale from `deepseek.com` in light mode, the white whale from `platform.deepseek.com` in dark mode - and the window swaps them with the Windows theme.
 *   **Theme-aware window chrome:** The title bar follows the *rendered page*: after the UI loads, its background color is measured and applied to the caption/border (Windows 11 22H2+), with a dark immersive caption for dark pages - no hard-coded white bar, no white startup flash.
+*   **Tray icon:** A notification-area icon with the themed DeepSeek whale. Right-click for *Show*, *Reload* and *Quit*; double-click brings the window back.
+*   **Proper fullscreen:** HTML5 fullscreen goes borderless over the full screen bounds with the window on top, so the taskbar does not stay visible even when the window was maximized.
 *   **Visual Studio friendly:** `.sln`, one modern `.csproj`, and ready-made Publish profiles (`PortableFolder` / `PortableSingleFile`) for one-click publishing from the VS Publish dialog.
 
 ## 💻 How to Use (Easy Way)
